@@ -1,0 +1,7 @@
+en:
+  js:
+    kuu_new_topic:
+      choice:
+        title: "What would you like to post?"
+        topic: "Topic"
+        topic_description: "Start a discussion, ask a question or share something"

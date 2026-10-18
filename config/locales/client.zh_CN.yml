@@ -1,0 +1,7 @@
+zh_CN:
+  js:
+    kuu_new_topic:
+      choice:
+        title: "你想发布什么？"
+        topic: "话题"
+        topic_description: "发起讨论、提问或分享"
