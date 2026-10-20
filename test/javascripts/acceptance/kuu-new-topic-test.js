@@ -180,3 +180,16 @@ acceptance("KUU new topic - openNewTopic", function (needs) {
     assert.dom(".kuu-new-topic-choice").doesNotExist();
   });
 });
+
+acceptance("KUU new topic - openNewTopic as a regular user", function (needs) {
+  // 管理员会跳过 core 的 filterTags，普通用户不会：传错标签格式时只有普通用户打不开编辑器
+  needs.user({ admin: false, moderator: false, staff: false });
+
+  test("opens the composer", async function (assert) {
+    await visit("/u/eviltrout/summary");
+    await this.owner.lookup("service:kuu-new-topic").openNewTopic();
+    await settled();
+
+    assert.dom("#reply-control.open").exists();
+  });
+});
