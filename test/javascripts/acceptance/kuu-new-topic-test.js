@@ -173,9 +173,7 @@ acceptance("KUU new topic - openNewTopic", function (needs) {
     const category = this.owner
       .lookup("service:site")
       .categories.find((c) => c.id === BUG_CATEGORY_ID);
-    await this.owner
-      .lookup("service:kuu-new-topic")
-      .openNewTopic({ category });
+    await this.owner.lookup("service:kuu-new-topic").openNewTopic({ category });
     await settled();
 
     assert.verifySteps([`market:${BUG_CATEGORY_ID}`]);
