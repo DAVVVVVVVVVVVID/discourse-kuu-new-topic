@@ -36,6 +36,16 @@ newTopic?.register({
 - 同一个 `id` 再登记一次会覆盖前一次
 - 插件开关关闭时不要登记
 
+## 从别处打开「新建话题」
+
+没有 core「新建话题」按钮的地方（比如主题组件做的手机底栏），调用：
+
+```js
+owner.lookup("service:kuu-new-topic").openNewTopic({ category, tag });
+```
+
+效果和点「新建话题」一样（专属分类直接开表单，其他地方弹选择框，没有可选类型就开普通编辑器）。只给登录用户调用，未登录用户由调用方自己处理（比如弹登录框）。插件没装时 `lookup` 返回 undefined，调用方要有退路。
+
 ## 依赖
 
 用到本插件的 KUU 插件在仓库根目录放 `about.json`，让 GitHub CI 测试时一起安装本插件：

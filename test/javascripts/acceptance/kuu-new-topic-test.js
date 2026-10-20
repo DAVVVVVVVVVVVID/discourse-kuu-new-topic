@@ -1,4 +1,4 @@
-import { click, visit } from "@ember/test-helpers";
+import { click, settled, visit } from "@ember/test-helpers";
 import { test } from "qunit";
 import { acceptance } from "discourse/tests/helpers/qunit-helpers";
 
@@ -128,5 +128,55 @@ acceptance("KUU new topic | reply-only categories", function (needs) {
 
     await visit("/c/bug/1");
     assert.dom("#create-topic").exists();
+  });
+});
+
+acceptance("KUU new topic - openNewTopic", function (needs) {
+  needs.user();
+
+  test("opens the composer when no type applies", async function (assert) {
+    await visit("/u/eviltrout/summary");
+    await this.owner.lookup("service:kuu-new-topic").openNewTopic();
+    await settled();
+
+    assert.dom(".kuu-new-topic-choice").doesNotExist();
+    assert.dom("#reply-control.open").exists();
+  });
+
+  test("offers the chooser on a page without a create-topic button", async function (assert) {
+    registerType(this.owner, {
+      id: "board",
+      inChooser: true,
+      open: () => assert.step("board"),
+    });
+
+    await visit("/u/eviltrout/summary");
+    assert.dom("#create-topic").doesNotExist();
+
+    await this.owner.lookup("service:kuu-new-topic").openNewTopic();
+    await settled();
+    assert.dom(".kuu-new-topic-choice").exists();
+
+    await click(".kuu-new-topic-choice__option[data-type-id='board']");
+    assert.verifySteps(["board"]);
+  });
+
+  test("opens a type's form directly for its own category", async function (assert) {
+    registerType(this.owner, {
+      id: "market",
+      categoryIds: () => [BUG_CATEGORY_ID],
+      inChooser: true,
+      open: ({ category }) => assert.step(`market:${category.id}`),
+    });
+
+    await visit("/u/eviltrout/summary");
+    const category = this.owner
+      .lookup("service:site")
+      .categories.find((c) => c.id === BUG_CATEGORY_ID);
+    await this.owner.lookup("service:kuu-new-topic").openNewTopic({ category });
+    await settled();
+
+    assert.verifySteps([`market:${BUG_CATEGORY_ID}`]);
+    assert.dom(".kuu-new-topic-choice").doesNotExist();
   });
 });

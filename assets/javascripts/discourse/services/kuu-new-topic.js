@@ -1,4 +1,5 @@
-import Service from "@ember/service";
+import Service, { service } from "@ember/service";
+import NewTopicChoice from "../components/kuu-new-topic/modal/new-topic-choice";
 
 /**
  * @typedef {object} KuuTopicType
@@ -21,6 +22,9 @@ import Service from "@ember/service";
  * Registry of topic types that open their own form instead of the composer.
  */
 export default class KuuNewTopic extends Service {
+  @service composer;
+  @service modal;
+
   #types = new Map();
 
   /** @returns {KuuTopicType[]} */
@@ -66,6 +70,47 @@ export default class KuuNewTopic extends Service {
       typeof type.inChooser === "function"
         ? type.inChooser(context)
         : type.inChooser
+    );
+  }
+
+  /**
+   * What happens when a user asks for a new topic: a type's own category opens
+   * its form directly; elsewhere the chooser offers a topic and the types that
+   * want to appear; with no such types the composer opens straight away.
+   * Used by core's create-topic button and by `openNewTopic`.
+   *
+   * @param {object} context `category` and `tag` where the user is.
+   * @param {() => void} createTopic Opens the ordinary composer.
+   */
+  start(context, createTopic) {
+    const ownType = this.typeForCategory(context.category);
+    if (ownType) {
+      return ownType.open({ ...context, createTopic });
+    }
+
+    const types = this.chooserTypes(context);
+    if (types.length === 0) {
+      return createTopic();
+    }
+
+    this.modal.show(NewTopicChoice, {
+      model: { types, context, createTopic },
+    });
+  }
+
+  /**
+   * Same as clicking core's create-topic button, for pages that do not have one
+   * (for example a theme's mobile bottom bar). The caller handles logged-out users.
+   *
+   * @param {object} [context] `category` and `tag` where the user is.
+   */
+  openNewTopic({ category, tag } = {}) {
+    const context = { category, tag };
+    this.start(context, () =>
+      this.composer.openNewTopic({
+        category,
+        tags: tag ? [tag.id] : [],
+      })
     );
   }
 }
