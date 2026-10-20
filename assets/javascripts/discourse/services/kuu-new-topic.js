@@ -107,9 +107,11 @@ export default class KuuNewTopic extends Service {
   openNewTopic({ category, tag } = {}) {
     const context = { category, tag };
     this.start(context, () =>
+      // core 的 filterTags 要的是逗号分隔的字符串（或 listTag 查询结果），传数组会在
+      // 非管理员身上报 "Cannot read properties of undefined (reading 'filter')"，编辑器打不开
       this.composer.openNewTopic({
         category,
-        tags: tag ? [tag.id] : [],
+        tags: tag?.id,
       })
     );
   }
